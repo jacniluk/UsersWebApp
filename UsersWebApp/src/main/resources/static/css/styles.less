@@ -1,0 +1,150 @@
+@charset "UTF-8";
+
+@border-radius: 0;
+@input-group-width: 500px;
+@page-link-big-min-width: 100px;
+@page-link-small-min-width: 50px;
+@spacing: 30px;
+
+.btn
+{
+	border-radius: @border-radius;
+	min-width: 100px;
+}
+
+.form-control
+{
+	border-radius: @border-radius;
+}
+
+.input-group
+{
+	width: @input-group-width;
+}
+
+.page-link
+{
+	border-radius: @border-radius !important;
+}
+
+.page-link-big
+{
+	min-width: @page-link-big-min-width;
+}
+
+.page-link-small
+{
+	min-width: @page-link-small-min-width
+}
+
+.progress
+{
+	border-radius: @border-radius !important;
+	width: 500px;
+}
+
+.sortable
+{
+	cursor: pointer;
+	position: relative;
+	
+	&::after
+	{
+		content: "";
+		position: absolute;
+		right: 10px;
+		top: 50%;
+		transform: translateY(-50%);
+	}
+}
+
+.asc
+{
+	&::after
+	{
+		content: "▲";
+	}
+}
+
+.desc
+{
+	&::after
+	{
+		content: "▼";
+	}
+}
+
+.inactive
+{
+	&::after
+	{
+		content: "▲";
+		opacity: 0.3;
+	}
+}
+
+.table
+{
+	text-align: left;
+	
+	th
+	{
+		width: calc(100% / 3);
+	}
+}
+
+.uwa-body
+{
+	margin-left: @spacing;
+	margin-right: @spacing;
+	padding-top: @spacing;
+}
+
+.uwa-horizontal
+{
+	display: flex;
+	justify-content: space-between;
+}
+
+@media (max-width: (4 * @page-link-big-min-width + 5 * @page-link-small-min-width + @input-group-width))
+{
+	.uwa-horizontal
+	{
+		flex-direction: column;
+	}
+}
+
+@media (max-width: 767px)
+{
+	h1,
+	.input-group,
+	.progress
+	{
+		width: 100%;
+	}
+	
+	.page-link-big,
+	.page-link-small
+	{
+		min-width: initial;
+	}
+	
+	.pagination
+	{
+    	flex-wrap: wrap;
+		width: 100%;
+	}
+	
+	.table
+	{
+		width: 100% !important;
+		
+		th,
+		td
+		{
+			white-space: normal;
+		    hyphens: none;
+		    word-break: break-word;
+		}
+	}
+}

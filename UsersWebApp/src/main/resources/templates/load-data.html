@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Load Data | Users Web App</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="./css/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</head>
+<body class="d-flex justify-content-center text-white uwa-body">
+	<div class="text-center">
+	    <div id="uploadSection">
+	        <h1 class="fw-bold mb-3">UPLOAD XML FILE</h1>
+	        <form id="uploadForm" class="input-group" action="/loaddata" method="post" enctype="multipart/form-data">
+	            <input type="file" id="fileInput" class="form-control" name="file" accept=".xml">
+	            <button type="submit" id="importButton" class="btn btn-primary">Import file</button>
+	        </form>
+	    </div>
+	    <div id="removeSection" style="display: none;">
+	        <h1 class="fw-bold mb-3">REMOVING OLD DATA</h1>
+	        <div class="spinner-border text-primary" role="status">
+				<span class="visually-hidden">Loading...</span>
+			</div>
+	    </div>
+	    <div id="progressSection" style="display: none;">
+	        <h1 class="fw-bold mb-3">IMPORT TO DATABASE PROGRESS</h1>
+	        <div class="progress mx-auto">
+			  	<div id="importProgress" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+			</div>
+	    </div>
+	    <div id="summarySection" style="display: none;">
+	        <h1 class="fw-bold mb-3">IMPORT SUMMARY</h1>
+	        <p id="importSummary"></p>
+	        <button onclick="window.location.href='./show-data';" type="button" class="btn btn-success">Show data</button>
+	    </div>
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function()
+   		{
+            document.getElementById("uploadForm").addEventListener("submit", function(event)
+       		{
+                event.preventDefault();
+
+                var file = document.getElementById("fileInput").files[0];
+                if (file)
+                {
+                    var formData = new FormData();
+                    formData.append("file", file);
+
+                    var xmlHttpRequest = new XMLHttpRequest();
+                    xmlHttpRequest.open("POST", "./import-file");
+                    xmlHttpRequest.onload = function()
+                    {
+                        if (xmlHttpRequest.status === 200)
+                        {
+                        	document.getElementById("progressSection").style.display = "none";
+                            document.getElementById("summarySection").style.display = "block";
+                            document.getElementById("importSummary").innerText = "The " + file.name + " file has been imported successfully.";
+                        }
+                        else
+                        {
+                            console.error(xmlHttpRequest.statusText);
+                        }
+                    };
+                    xmlHttpRequest.send(formData);
+                }
+            });
+            
+            connect();
+            
+            function connect()
+            {
+                var socket = new SockJS('./ws');
+                stompClient = Stomp.over(socket);
+                stompClient.connect({}, function(frame)
+           		{
+                    stompClient.subscribe('/topic/section', function(section)
+               		{
+                        updateSection(section);
+                    });
+                    
+                    stompClient.subscribe('/topic/progress', function(progress)
+               		{
+                        updateProgressBar(Math.round(JSON.parse(progress.body)));
+                    });
+                });
+            }
+            
+            function updateSection(section)
+            {
+            	if (section.body === "uploadToRemove")
+           		{
+            		document.getElementById("uploadSection").style.display = "none";
+                    document.getElementById("removeSection").style.display = "block";
+           		}
+            	else if (section.body === "removeToProgress")
+           		{
+            		document.getElementById("removeSection").style.display = "none";
+                    document.getElementById("progressSection").style.display = "block";
+           		}
+            	else
+            	{
+            		document.getElementById("uploadSection").style.display = "none";
+                    document.getElementById("progressSection").style.display = "block";
+            	}
+            }
+
+            function updateProgressBar(loadProgress)
+            {
+                var progressBar = document.getElementById('importProgress');
+                progressBar.style.width = loadProgress + "%";
+                progressBar.innerText = loadProgress + "%";
+            }
+        });
+    </script>
+</body>
+</html>
